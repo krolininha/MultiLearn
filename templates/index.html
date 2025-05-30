@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="bg-primary text-white py-5">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6 text-center text-md-start">
+                <h1 class="display-4">Learn in Your Language</h1>
+                <p class="lead">Supporting Grundschule students with multilingual tutors across Berlin</p>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-body">
+                        <form action="/search" method="GET">
+                            <div class="mb-3">
+                                <select class="form-select" name="subject">
+                                    <option selected>Select Subject</option>
+                                    <option value="mathematics">Mathematics</option>
+                                    <option value="german">German</option>
+                                    <option value="history">History</option>
+                                    <option value="science">Science</option>
+                                    <option value="geography">Geography</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <select class="form-select" name="grade">
+                                    <option selected>Select Grade</option>
+                                    <option value="1">1st Grade</option>
+                                    <option value="2">2nd Grade</option>
+                                    <option value="3">3rd Grade</option>
+                                    <option value="4">4th Grade</option>
+                                    <option value="4">5th Grade</option>
+                                    <option value="4">6th Grade</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <select class="form-select" name="language">
+                                    <option selected>Select Language</option>
+                                    <option value="german">German</option>
+                                    <option value="english">English</option>
+                                    <option value="portuguese">Portuguese</option>
+                                    <option value="turkish">Turkish</option>
+                                    <option value="spanish">Spanish</option>
+                                    <option value="polish">Polish</option>
+                                    <option value="russian">Russian</option>
+                                    <option value="chinese">Chinese</option>
+                                    <option value="japanese">Japanese</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">  <!-- Alterado para manter consistência -->
+                                <input type="text" name="zipcode" class="form-select" 
+                                       placeholder="Your Zipcode (ex: 10365)">
+                            </div>
+                            <div class="mb-3">  <!-- Alterado para manter consistência -->
+                                <select name="radius" class="form-select">
+                                    <option selected>Select Distance</option>
+                                    <option value="2">Within 2 km</option>
+                                    <option value="5">Within 5 km</option>
+                                    <option value="10">Within 10 km</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Find Tutors</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

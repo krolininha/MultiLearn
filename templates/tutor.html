@@ -1,0 +1,64 @@
+<!-- tutor.html -->
+{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+   <!-- Informações Principais -->
+   <div class="card mb-4">
+       <div class="card-body">
+           <div class="row">
+               <div class="col-md-3">
+                   <img src="{{ tutor.photo }}" class="img-fluid rounded-circle">
+               </div>
+               <div class="col-md-6">
+                   <h2>{{ tutor.name }}</h2>
+                   <p class="text-muted">{{ tutor.location }}</p>
+                   <div class="mb-3">
+                       <h5>Subjects:</h5>
+                       <p>{{ tutor.subjects }}</p>
+                   </div>
+                   <div class="mb-3">
+                       <h5>Languages:</h5>
+                       <p>{{ tutor.languages }}</p>
+                   </div>
+                   <div class="mb-3">
+                       <h5>Grade Levels:</h5>
+                       <p>{{ tutor.grade_levels }}</p>
+                   </div>
+               </div>
+               <div class="col-md-3 text-center">
+                <h3>€{{ tutor.price }}/hour</h3>
+                <a href="mailto:{{ tutor.email }}" class="btn btn-primary mt-3">Contact Tutor</a>
+            </div>
+           </div>
+       </div>
+   </div>
+
+   <!-- Disponibilidade e Contato -->
+   <div class="row">
+       <div class="col-md-6">
+           <div class="card">
+            <div class="card-body">
+                <h4>Availability</h4>
+                {% for day in tutor.availability.split(',') %}
+                    <div class="d-flex justify-content-between">
+                        <span>{{ day }}</span>
+                    </div>
+                {% endfor %}
+            </div>
+           </div>
+       </div>
+       <div class="col-md-6">
+           <div class="card">
+               <div class="card-body">
+                   <h4>Contact Information</h4>
+                   <h6>(Approximate address)</h6>
+                   <p><strong>Email:</strong> {{ tutor.email }}</p>
+                   <p><strong>Phone:</strong> {{ tutor.phone }}</p>
+                   <p><strong>Area:</strong> {{ tutor.location }}</p>
+                   <p><strong>Address:</strong> {{ tutor.address }}</p>
+               </div>
+           </div>
+       </div>
+   </div>
+</div>
+{% endblock %}

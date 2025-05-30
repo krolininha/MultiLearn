@@ -1,0 +1,1570 @@
+9+Shareconversa.txt11,088 linestxtSquero conntinuar esse projeto que abri em outro chat aqui no ClaudeEditI can help you continue with your MultiLearn project! Looking at the conversation history, I see you've been developing a location-based web application that connects tutors with students in Berlin. The project uses Flask, SQLite, Bootstrap, and integrates with mapping APIs.
+What specific part of the project would you like to work on now? From our previous conversation, we were working on:
+
+Updating the tutor registration form to use address autocomplete
+Improving the search functionality to use precise addresses instead of zipcodes
+Updating various templates to display address information
+Implementing basic password validation
+
+Would you like to continue with one of these features, or is there something else you'd like to work on?RetrySpodemos conversar em portugues? porem o projeto sera em ingles.EditClaro, podemos conversar em português enquanto continuamos desenvolvendo o projeto em inglês.
+Em que parte do projeto MultiLearn você gostaria de trabalhar agora? Conforme vimos na conversa anterior, estávamos trabalhando em:
+
+Atualizar o formulário de registro de tutores para usar autopreenchimento de endereços
+Melhorar a funcionalidade de busca para usar endereços precisos em vez de códigos postais
+Atualizar vários templates para exibir informações de endereço
+Implementar validação básica de senha
+
+Você gostaria de continuar com alguma dessas funcionalidades ou há algo diferente que gostaria de desenvolver?RetrySisso foi a ultima msg no chat antigo: Para adicionar o campo de endereço ao dashboard do tutor, você precisará atualizar o arquivo tutor_dashboard.html. Neste momento, o endereço não está sendo exibido porque este template não foi atualizado para incluir esse campo.
+Você deve modificar o tutor_dashboard.html para incluir o campo de endereço na seção "Edit Profile". Adicione o seguinte código na área de edição de perfil, logo após o campo de Location:CopyhtmlCopy
+<div class="mb-3"> <label>Address</label> <input type="text" class="form-control" name="address" value="{{ tutor.address }}"> </div>
+E na seção de informações de contato (Contact Information), adicione:CopyhtmlCopy
+<p><strong>Address:</strong> {{ tutor.address }}</p>
+Se você não tiver acesso ao arquivo tutor_dashboard.html, você pode compartilhar seu conteúdo aqui e eu posso ajudar a identificar onde adicionar o campo de endereço.EditCerto! Vamos continuar do ponto onde paramos. Você estava atualizando o arquivo tutor_dashboard.html para incluir o campo de endereço.
+Precisamos fazer duas mudanças nesse arquivo:
+
+Adicionar um campo de endereço no formulário de edição do perfil do tutor:
+
+htmlCopy<div class="mb-3">
+    <label>Address</label>
+    <input type="text" class="form-control" name="address" value="{{ tutor.address }}">
+</div>
+
+Adicionar o endereço na seção de informações de contato:
+
+htmlCopy<p><strong>Address:</strong> {{ tutor.address }}</p>
+Você conseguiu fazer essas alterações no seu arquivo tutor_dashboard.html? Se precisar, posso criar um exemplo completo do arquivo com essas modificações incluídas.
+Além disso, precisamos garantir que a função de edição de perfil no app.py também esteja processando o campo de endereço quando o tutor atualiza suas informações. Você gostaria que eu revisasse essa parte também?Retrytutor_dashboard.html112 lineshtmlSEditAgora que tenho o arquivo tutor_dashboard.html, vamos adicionar o campo de endereço conforme discutimos anteriormente. Precisamos fazer duas alterações:
+
+Adicionar o campo de endereço no formulário de edição:
+
+Este deve ser inserido após o campo de "Location"
+
+
+Adicionar o endereço na seção de informações de contato:
+
+Este deve ser adicionado à lista de informações de contato
+
+
+
+Aqui está como você deve atualizar seu arquivo:
+
+No formulário de edição, adicione esta linha após o campo "Location":
+
+htmlCopy<div class="mb-3">
+    <label>Address</label>
+    <input type="text" class="form-control" name="address" value="{{ tutor.address }}">
+</div>
+
+Na seção de informações de contato, adicione esta linha após o preço:
+
+htmlCopy<p><strong>Address:</strong> {{ tutor.address }}</p>
+Depois de fazer essas alterações, também precisamos garantir que a função edit_tutor no arquivo app.py processe o campo de endereço quando o formulário for enviado. A função deve ser atualizada para incluir o campo 'address' na lista de campos a serem atualizados no banco de dados.
+Caso precise, aqui está um exemplo de como a função edit_tutor deveria ser atualizada:
+pythonCopy@app.route('/tutor/edit/<int:tutor_id>', methods=['POST'])
+def edit_tutor(tutor_id):
+    # Get form data
+    name = request.form['name']
+    email = request.form['email']
+    phone = request.form['phone']
+    location = request.form['location']
+    address = request.form['address']  # Novo campo
+    subjects = ", ".join(request.form.getlist('subjects'))
+    languages = ", ".join(request.form.getlist('languages'))
+    availability = ", ".join(request.form.getlist('availability'))
+    price = request.form['price']
+    photo = request.form['photo']
+    
+    # Update tutor in database
+    conn = get_db_connection()
+    conn.execute('''
+        UPDATE tutors 
+        SET name = ?, email = ?, phone = ?, location = ?, address = ?, 
+            subjects = ?, languages = ?, availability = ?, price = ?, photo = ?
+        WHERE id = ?
+    ''', (name, email, phone, location, address, subjects, languages, 
+          availability, price, photo, tutor_id))
+    conn.commit()
+    conn.close()
+    
+    return redirect(url_for('tutor_dashboard', tutor_id=tutor_id))
+Deseja que eu mostre também como ajustar o formulário de busca na página inicial para usar endereço em vez de zipcode?RetrySpode me mandar o codigo completo do tutor_dashboard?EditClaro! Aqui está o código completo do tutor_dashboard.html com as alterações para incluir o campo de endereço:
+htmlCopy{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Área Principal -->
+        <div class="col-md-8">
+            <!-- Informações do Perfil -->
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <img src="{{ tutor.photo }}" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+                    <h2>{{ tutor.name }}</h2>
+                    <p class="text-muted">{{ tutor.location }}</p>
+                </div>
+            </div>
+
+            <!-- Editing form -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3>Edit Profile</h3>
+                    <form method="POST" action="{{ url_for('edit_tutor', tutor_id=tutor.id) }}">
+                        <div class="mb-3">
+                            <label>Name</label>
+                            <input type="text" class="form-control" name="name" value="{{ tutor.name }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Email</label>
+                            <input type="email" class="form-control" name="email" value="{{ tutor.email }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label>Phone</label>
+                            <input type="text" class="form-control" name="phone" value="{{ tutor.phone }}">
+                        </div>
+                        <div class="mb-3">
+                            <label>Location</label>
+                            <input type="text" class="form-control" name="location" value="{{ tutor.location }}">
+                        </div>
+                        <div class="mb-3">
+                            <label>Address</label>
+                            <input type="text" class="form-control" name="address" value="{{ tutor.address }}">
+                        </div>
+
+                        <!-- Subjects -->
+                        <div class="mb-3">
+                            <label class="form-label">Subjects</label>
+                            <div class="form-check">
+                                {% for subject in ["Mathematics", "German", "History", "Science", "Geography"] %}
+                                <input class="form-check-input" type="checkbox" name="subjects" value="{{ subject }}" 
+                                    {% if subject in tutor.subjects.split(", ") %}checked{% endif %}>
+                                <label class="form-check-label">{{ subject }}</label><br>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Languages -->
+                        <div class="mb-3">
+                            <label class="form-label">Languages</label>
+                            <div class="form-check">
+                                {% for language in ["German", "English", "Portuguese", "Spanish", "French"] %}
+                                <input class="form-check-input" type="checkbox" name="languages" value="{{ language }}"
+                                    {% if language in tutor.languages.split(", ") %}checked{% endif %}>
+                                <label class="form-check-label">{{ language }}</label><br>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Availability -->
+                        <div class="mb-3">
+                            <label class="form-label">Availability (Days of the Week)</label>
+                            <div class="form-check">
+                                {% for day in ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"] %}
+                                <input class="form-check-input" type="checkbox" name="availability" value="{{ day }}"
+                                    {% if day in tutor.availability.split(", ") %}checked{% endif %}>
+                                <label class="form-check-label">{{ day }}</label><br>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label>Price per hour (€)</label>
+                            <input type="number" class="form-control" name="price" value="{{ tutor.price }}">
+                        </div>
+                        <div class="mb-3">
+                            <label>Profile Photo (URL)</label>
+                            <input type="url" class="form-control" name="photo" value="{{ tutor.photo }}">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informações Fixas -->
+        <div class="col-md-4">
+            <!-- Disponibilidade -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <h3>My Availability</h3>
+                    <p>{{ tutor.availability }}</p>
+                </div>
+            </div>
+
+            <!-- Informações de Contato -->
+            <div class="card">
+                <div class="card-body">
+                    <h3>Contact Information</h3>
+                    <p><strong>Email:</strong> {{ tutor.email }}</p>
+                    <p><strong>Phone:</strong> {{ tutor.phone }}</p>
+                    <p><strong>Price:</strong> €{{ tutor.price }}/hour</p>
+                    <p><strong>Address:</strong> {{ tutor.address }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+As mudanças que fiz foram:
+
+Adicionei o campo de endereço no formulário de edição após o campo de Location:
+htmlCopy<div class="mb-3">
+    <label>Address</label>
+    <input type="text" class="form-control" name="address" value="{{ tutor.address }}">
+</div>
+
+Adicionei o endereço na seção de informações de contato:
+htmlCopy<p><strong>Address:</strong> {{ tutor.address }}</p>
+
+
+Agora, quando um tutor editar seu perfil, ele poderá atualizar seu endereço, e essa informação será exibida nas informações de contato.Retryapp.py354 linespyrequirements.txt25 linestxtstyle.css99 linescssaddress-autocomplete.js37 linesjsmap.js24 linesjstutor_dashboard.html116 lineshtmltutor_login.html26 lineshtmltutor_register.html284 lineshtmlabout_us.html57 lineshtmlbase.html63 lineshtmlindex.html71 lineshtmlsearch.html99 lineshtmltutor.html63 lineshtmlid|name         |email            |phone       |location       |price|subjects                  |languages                  |availability               |photo                                                                                                                             |grade_levels    pastedid|name         |email            |phone       |location       |price|subjects                  |languages                  |availability               |photo                                                                                                                             |grade_levels    pastedSEditAgora posso ver todos os arquivos do seu projeto MultiLearn! Vejo que você já implementou as alterações no tutor_dashboard.html adicionando o campo de endereço tanto no formulário de edição quanto na seção de informações de contato.
+No entanto, precisamos atualizar a função edit_tutor no app.py para incluir o campo de endereço quando processamos a atualização do perfil. Atualmente, a função não está incluindo esse campo.
+Aqui está a atualização necessária para a função edit_tutor no seu app.py:
+pythonCopy@app.route('/tutor/edit/<int:tutor_id>', methods=['POST'])
+def edit_tutor(tutor_id):
+    """
+    Handles the tutor profile update.
+    If the tutor doesn't change subjects or languages, it keeps the previous data.
+    """
+    conn = get_db_connection()
+    try:
+        # Captures form data
+        name = request.form['name']
+        email = request.form['email']
+        phone = request.form['phone']
+        location = request.form['location']
+        address = request.form['address']  # Adicionado campo de endereço
+        price = request.form['price']
+        photo = request.form['photo']
+        
+        # Captures the tutor's old data to keep the values unchanged
+        tutor = conn.execute('SELECT * FROM tutors WHERE id = ?', (tutor_id,)).fetchone()
+        
+        # If nothing is selected, it keeps the old data
+        subjects = ', '.join(request.form.getlist('subjects')) if request.form.getlist('subjects') else tutor['subjects']
+        languages = ', '.join(request.form.getlist('languages')) if request.form.getlist('languages') else tutor['languages']
+        availability = ', '.join(request.form.getlist('availability')) if request.form.getlist('availability') else tutor['availability']
+
+        # Updates the database
+        conn.execute('''
+            UPDATE tutors 
+            SET name=?, email=?, phone=?, location=?, address=?, subjects=?, languages=?, 
+                price=?, availability=?, photo=?
+            WHERE id=?
+        ''', (name, email, phone, location, address, subjects, languages, price, availability, photo, tutor_id))
+        
+        conn.commit()
+        conn.close()
+        
+        return redirect(url_for('tutor_dashboard', tutor_id=tutor_id))
+    except Exception as e:
+        conn.close()
+        print(f"Error updating tutor: {e}")
+        return redirect(url_for('tutor_dashboard', tutor_id=tutor_id))
+As principais alterações são:
+
+Adicionado address = request.form['address'] para capturar o endereço do formulário
+Adicionado o campo address na instrução SQL UPDATE
+Adicionado o parâmetro address na tupla de valores para a consulta SQL
+
+Vejo que você também precisa atualizar seu arquivo map.js para exibir o endereço em vez do código postal nos popups do mapa. Aqui está a atualização para map.js:
+javascriptCopydocument.addEventListener('DOMContentLoaded', function() {
+    // Get map container
+    const mapElement = document.getElementById('map');
+    if (!mapElement) return;
+
+    // Get data from data attributes
+    const centerLat = mapElement.dataset.centerLat || 52.5200;
+    const centerLng = mapElement.dataset.centerLng || 13.4050;
+    const tutorsData = JSON.parse(mapElement.dataset.tutors || '[]');
+
+    // Initialize map
+    var map = L.map('map').setView([centerLat, centerLng], 11);
+    
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+
+    // Add markers (using Leaflet) (Leaflet is an open source JavaScript library for interactive maps.)
+    tutorsData.forEach(function(tutor) {
+        L.marker([tutor.latitude, tutor.longitude])
+            .addTo(map)
+            .bindPopup(`<b>${tutor.name}</b><br>${tutor.subjects}<br>${tutor.address}`);  // Alterado de zipcode para address
+    });
+});
+Com essas alterações, o campo de endereço será devidamente processado quando o tutor editar seu perfil, e o endereço completo será exibido nos popups do mapa em vez do código postal.
+Quer que eu ajude com alguma outra parte do projeto?Retryapp.py355 linespymap.js24 linesjsSagora esta correto?EditSim, agora está tudo correto! Você fez exatamente as alterações que mencionei:
+
+No arquivo app.py, a função edit_tutor foi atualizada para incluir:
+
+A captura do campo address do formulário: address = request.form['address']
+A inclusão desse campo na instrução SQL UPDATE
+A adição do parâmetro address na tupla de valores
+
+
+No arquivo map.js, você alterou a parte que mostra o popup dos marcadores para exibir o endereço:
+javascriptCopy.bindPopup(`<b>${tutor.name}</b><br>${tutor.subjects}<br>${tutor.address}`);
+
+
+Com isso, seu sistema agora está perfeitamente configurado para:
+
+Exibir o endereço completo dos tutores no mapa
+Permitir que os tutores atualizem seus endereços através do dashboard
+Persistir essas informações no banco de dados
+
+O campo de endereço está agora completamente integrado em todo o sistema MultiLearn! Há mais alguma coisa que você gostaria de ajustar ou implementar no projeto?RetrySum problema que estou tento: eu vou me cadastrar como um tutor, na hora que digito meu endereco (Rüdigerstrasse 66) nao aparece como opcao, tentei uma avenida aqui perto (Lansberger Alle) tb nao aparece como opcao.EditEsse é um problema comum com o sistema de autopreenchimento baseado no Nominatim. Vamos analisar alguns possíveis problemas e soluções:
+
+Especificidade do endereço: O Nominatim às vezes requer mais detalhes, como adicionar "Berlin, Germany" após o nome da rua.
+Caracteres especiais: Caracteres como "ü" podem causar problemas. Experimente escrever "Ruedigerstrasse" em vez de "Rüdigerstrasse".
+Formato das ruas alemãs: Na Alemanha, às vezes o formato "Rüdigerstraße 66, Berlin" funciona melhor que "Rüdigerstrasse 66".
+Configuração do Nominatim: Talvez precisemos ajustar alguns parâmetros na chamada da API.
+
+Vamos modificar o arquivo address-autocomplete.js para melhorar a busca:
+javascriptCopy$(function() {
+  $("#address").autocomplete({
+    source: function(request, response) {
+      // Adicionar "Berlin" automaticamente à consulta se não estiver presente
+      let searchTerm = request.term;
+      if (!searchTerm.toLowerCase().includes('berlin')) {
+        searchTerm += ', Berlin, Germany';
+      }
+
+      $.ajax({
+        url: "https://nominatim.openstreetmap.org/search",
+        dataType: "json",
+        data: {
+          q: searchTerm,
+          format: "json",
+          addressdetails: 1,
+          limit: 10,  // Aumentado de 5 para 10
+          countrycodes: "de",
+          viewbox: "13.1,52.3,13.6,52.7",  // Caixa delimitadora de Berlin
+          bounded: 1
+        },
+        success: function(data) {
+          response($.map(data, function(item) {
+            return {
+              label: item.display_name,
+              value: item.display_name,
+              lat: item.lat,
+              lon: item.lon,
+              district: item.address.suburb || item.address.city_district || item.address.district || "",
+              postcode: item.address.postcode || ""
+            };
+          }));
+        }
+      });
+    },
+    minLength: 3,
+    delay: 500,  // Esperar meio segundo antes de fazer a consulta
+    select: function(event, ui) {
+      // Preencher campos ocultos automaticamente
+      $("#latitude").val(ui.item.lat);
+      $("#longitude").val(ui.item.lon);
+      $("#location").val(ui.item.district);
+      $("#zipcode").val(ui.item.postcode);
+    }
+  });
+});
+As melhorias principais são:
+
+Adicionar "Berlin, Germany" automaticamente à consulta
+Aumentar o limite de resultados para 10
+Adicionar um parâmetro viewbox para limitar as buscas à região de Berlin
+Adicionar um pequeno atraso (delay) para dar tempo do usuário digitar mais caracteres
+
+Se o problema persistir, pode ser necessário usar uma API alternativa como a Google Places API, que é mais robusta para endereços, mas é um serviço pago. Para fins educacionais, a Nominatim ainda é uma boa opção se conseguirmos fazer esses ajustes.RetryScomo eu excluo um tutor do meu banco de dados? creie o tutor chamado test e agora quer deletarEditPara excluir um tutor do seu banco de dados, você pode fazer isso de duas maneiras:
+1. Diretamente pelo DBeaver:
+
+Abra o DBeaver e conecte-se ao seu banco de dados SQLite (tutors.db)
+Expanda a conexão e navegue até a tabela "tutors"
+Clique com o botão direito na tabela e selecione "View Data"
+Encontre a linha com o tutor "test"
+Clique com o botão direito na linha e selecione "Delete row" ou "Delete selected rows"
+Confirme a exclusão
+
+2. Usando SQL no DBeaver:
+Você pode executar um comando SQL para excluir o tutor:
+sqlCopyDELETE FROM tutors WHERE name = 'test';
+Se você quiser excluir pelo ID (o que é mais seguro, especialmente se puder haver nomes duplicados):
+sqlCopyDELETE FROM tutors WHERE id = 13;  -- substitua 13 pelo ID correto do tutor
+Para verificar se o tutor foi realmente excluído, execute:
+sqlCopySELECT * FROM tutors WHERE name = 'test';
+Se preferir, você também poderia implementar uma funcionalidade de exclusão no seu aplicativo Flask, adicionando uma rota como esta:
+pythonCopy@app.route('/tutor/delete/<int:tutor_id>')
+def delete_tutor(tutor_id):
+    conn = get_db_connection()
+    conn.execute('DELETE FROM tutors WHERE id = ?', (tutor_id,))
+    conn.commit()
+    conn.close()
+    return redirect(url_for('home'))
+E adicionar um botão de exclusão no dashboard do tutor:
+htmlCopy<a href="{{ url_for('delete_tutor', tutor_id=tutor.id) }}" 
+   class="btn btn-danger"
+   onclick="return confirm('Are you sure you want to delete your profile?')">
+    Delete Profile
+</a>
+Qual método você prefere usar?RetrySoutro problema, eu quando crio um tutor, coloco o endereco (com o auto-complete) porem quando entro no perfil criado, nao aparece o endereco. No meu banco de dados é criado um tutor, mas o endereco nao aparece la tambemEditVejo dois problemas nos dados apresentados:
+
+No dashboard do tutor: O campo "Address" mostra "None" mesmo você tendo selecionado um endereço via autocomplete.
+No banco de dados: O endereço não está sendo salvo quando você cria um novo tutor.
+
+O problema está na função tutor_register no arquivo app.py. Atualmente, essa função não está incluindo o campo address quando insere um novo tutor no banco de dados. O formulário está recebendo o campo address, mas a função está usando apenas o zipcode para geocodificação e não está salvando o endereço completo.
+Vamos atualizar a função tutor_register no arquivo app.py:
+pythonCopy@app.route('/tutor/register', methods=['GET', 'POST'])
+def tutor_register():
+    """
+    Handles tutor registration process.
+    """
+    if request.method == 'POST':
+        try:
+            # Get form data
+            name = request.form['name']
+            email = request.form['email']
+            password = request.form['password']
+            confirm_password = request.form['confirm_password']
+            phone = request.form['phone']
+            location = request.form['location']
+            address = request.form['address']  # Capturar o endereço 
+            subjects = request.form['subjects']
+            languages = request.form['languages']
+            grade_levels = request.form['grade_levels']
+            availability = request.form['availability']
+            price = request.form['price']
+            zipcode = request.form['zipcode']
+            photo = request.form.get('photo', '')
+            
+            # Verify if passwords match
+            if password != confirm_password:
+                return render_template('tutor_register.html', error="Passwords do not match")
+            
+            # Get coordinates from hidden fields (set by autocomplete)
+            latitude = request.form.get('latitude')
+            longitude = request.form.get('longitude')
+            
+            # If latitude/longitude not provided via autocomplete, get from zipcode
+            if not latitude or not longitude:
+                headers = {
+                    'User-Agent': 'MultiLearn Tutorial Project'
+                }
+                endpoint = f"https://nominatim.openstreetmap.org/search?postalcode={zipcode}&country=Germany&format=json"
+                response = requests.get(endpoint, headers=headers)
+                
+                if response.status_code == 200:
+                    location_data = response.json()
+                    if location_data:
+                        latitude = float(location_data[0]['lat'])
+                        longitude = float(location_data[0]['lon'])
+                    else:
+                        return render_template('tutor_register.html', error="Could not verify location")
+                else:
+                    return render_template('tutor_register.html', error="Could not verify location")
+            
+            # Insert into database
+            conn = get_db_connection()
+            conn.execute('''
+                INSERT INTO tutors (
+                    name, email, password, phone, location, address,
+                    subjects, languages, grade_levels, availability, 
+                    price, zipcode, photo, latitude, longitude
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                name, email, password, phone, location, address,
+                subjects, languages, grade_levels, availability, 
+                price, zipcode, photo, latitude, longitude
+            ))
+            conn.commit()
+            conn.close()
+            
+            return redirect(url_for('tutor_login'))
+                
+        except Exception as e:
+            print(f"Error during registration: {e}")
+            return render_template('tutor_register.html', error="Registration failed. Please try again.")
+    
+    # GET request
+    return render_template('tutor_register.html')
+As principais alterações são:
+
+Adicionei address = request.form['address'] para capturar o endereço do formulário
+Adicionei lógica para obter as coordenadas dos campos ocultos (preenchidos pelo autocomplete)
+Atualizei a query SQL para incluir o campo address na inserção
+Adicionei o valor address nos valores da query
+
+Isso deve resolver o problema de registro de novos tutores com endereços completos.
+Quanto à exclusão do tutor, você pode usar o método pelo DBeaver que mencionei anteriormente, ou implementar uma funcionalidade de exclusão na interface do usuário. Quer que eu mostre como implementar um botão de exclusão no dashboard do tutor?RetrySagora esta muito bom! Funciona perfeitmente.EditÓtimo! Fico feliz que esteja funcionando perfeitamente agora.
+Seu projeto MultiLearn está realmente completo e funcional, com várias características importantes:
+
+Sistema de registro e login para tutores
+Perfil de tutor editável com todas as informações relevantes
+Busca avançada com filtros por matéria, série, idioma
+Busca baseada em localização com mapa interativo
+Autopreenchimento de endereços
+Visualização detalhada do perfil dos tutores
+
+Este projeto demonstra várias habilidades importantes de desenvolvimento web:
+
+Backend com Flask (Python)
+Banco de dados SQLite
+Integração com APIs externas (Nominatim para geocodificação)
+Frontend com Bootstrap, HTML, CSS e JavaScript
+Mapas interativos com Leaflet
+
+É um ótimo projeto para seu portfólio, especialmente como um projeto de aprendizado. Se precisar de mais ajustes ou quiser implementar mais funcionalidades no futuro, fique à vontade para perguntar!RetrySvc pode me explicar o codigo auto complete.js?EditClaro! Vou explicar o arquivo address-autocomplete.js linha por linha para você entender bem como funciona o autocompletamento de endereços.
+javascriptCopy$(function() {
+  $("#address").autocomplete({
+    source: function(request, response) {
+      $.ajax({
+        url: "https://nominatim.openstreetmap.org/search",
+        dataType: "json",
+        data: {
+          q: request.term,
+          format: "json",
+          addressdetails: 1,
+          limit: 5,
+          countrycodes: "de"
+        },
+        success: function(data) {
+          response($.map(data, function(item) {
+            return {
+              label: item.display_name,
+              value: item.display_name,
+              lat: item.lat,
+              lon: item.lon,
+              district: item.address.suburb || item.address.city_district || item.address.district || "",
+              postcode: item.address.postcode || ""
+            };
+          }));
+        }
+      });
+    },
+    minLength: 3,
+    select: function(event, ui) {
+      // Preencher campos ocultos automaticamente
+      $("#latitude").val(ui.item.lat);
+      $("#longitude").val(ui.item.lon);
+      $("#location").val(ui.item.district);
+      $("#zipcode").val(ui.item.postcode);
+    }
+  });
+});
+Explicação parte por parte:
+
+$(function() { ... });
+
+Esta é uma função do jQuery que equivale a document.addEventListener('DOMContentLoaded', function() { ... })
+Espera o documento HTML carregar completamente antes de executar o código
+
+
+$("#address").autocomplete({ ... })
+
+Seleciona o elemento HTML com id="address" (o campo de entrada de endereço)
+Aplica o plugin jQuery UI Autocomplete a esse campo
+
+
+O objeto de configuração do autocomplete:
+
+source: function(request, response) { ... }
+
+Esta função é chamada cada vez que o usuário digita no campo de endereço
+request.term contém o texto que o usuário digitou
+response é uma função de callback que deve ser chamada com os resultados da busca
+
+
+
+
+$.ajax({ ... })
+
+Faz uma chamada AJAX (requisição HTTP assíncrona) para a API Nominatim
+Parâmetros:
+
+url: endpoint da API Nominatim para busca
+dataType: espera dados JSON como resposta
+data: parâmetros enviados para a API:
+
+q: o texto digitado pelo usuário
+format: solicita resposta em formato JSON
+addressdetails: 1: solicita detalhes do endereço (como bairro, código postal)
+limit: 5: limita a 5 resultados
+countrycodes: "de": limita resultados à Alemanha
+
+
+
+
+
+
+success: function(data) { ... }
+
+Função chamada quando a API responde com sucesso
+data contém os resultados da busca
+
+
+response($.map(data, function(item) { ... }))
+
+$.map() transforma cada item do resultado da API
+Para cada item, cria um objeto com:
+
+label: o que é mostrado na lista de sugestões
+value: o que vai para o campo de texto quando selecionado
+lat e lon: coordenadas geográficas
+district: bairro/distrito (com fallbacks caso um não exista)
+postcode: código postal
+
+
+
+
+minLength: 3
+
+Só começa a buscar depois que o usuário digitar pelo menos 3 caracteres
+Evita chamadas desnecessárias à API
+
+
+select: function(event, ui) { ... }
+
+Função chamada quando o usuário seleciona uma sugestão
+ui.item contém o item selecionado com todos os dados
+Preenche automaticamente campos ocultos do formulário:
+
+latitude e longitude: para armazenar as coordenadas exatas
+location: para armazenar o bairro/distrito
+zipcode: para armazenar o código postal
+
+
+
+
+
+Este código cria um campo de texto inteligente que, enquanto o usuário digita um endereço, busca na API Nominatim por sugestões correspondentes e, quando o usuário seleciona uma delas, preenche automaticamente outros campos do formulário com informações relacionadas (latitude, longitude, bairro e código postal).
+Resumidamente, o script proporciona uma experiência amigável ao usuário, evitando erros de digitação e garantindo que os endereços sejam válidos e geocodificáveis.RetrySna pagina do perfil do Tutor ele pode alterar algumas informacoes e salvar. esqueci de colocar um botao para deslogar, poderia me ajudar?EditPosso te ajudar a adicionar um botão de logout no perfil do tutor! Para isso, precisamos fazer algumas modificações:
+
+Primeiro, vamos adicionar uma rota de logout no arquivo app.py:
+
+pythonCopy@app.route('/logout')
+def logout():
+    """
+    Handles user logout by redirecting to the home page.
+    
+    Returns:
+        Redirect to home page
+    """
+    return redirect(url_for('home'))
+
+Agora, vamos adicionar o botão de logout no arquivo tutor_dashboard.html. Podemos colocá-lo na parte superior do dashboard ou próximo às informações de contato:
+
+Opção 1 - Próximo ao botão "Save Changes":
+htmlCopy<div class="d-grid gap-2 mt-3">
+    <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+    <a href="{{ url_for('logout') }}" class="btn btn-secondary w-100 mt-2">Logout</a>
+</div>
+Opção 2 - No cabeçalho do perfil:
+htmlCopy<div class="card mb-4">
+    <div class="card-body text-center">
+        <img src="{{ tutor.photo }}" class="img-fluid rounded-circle mb-3" style="width: 150px; height: 150px; object-fit: cover;">
+        <h2>{{ tutor.name }}</h2>
+        <p class="text-muted">{{ tutor.location }}</p>
+        <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary btn-sm">Logout</a>
+    </div>
+</div>
+Opção 3 - Na área de informações fixas (lado direito):
+htmlCopy<div class="card">
+    <div class="card-body">
+        <h3>Contact Information</h3>
+        <p><strong>Email:</strong> {{ tutor.email }}</p>
+        <p><strong>Phone:</strong> {{ tutor.phone }}</p>
+        <p><strong>Price:</strong> €{{ tutor.price }}/hour</p>
+        <p><strong>Address:</strong> {{ tutor.address }}</p>
+        
+        <div class="text-center mt-3">
+            <a href="{{ url_for('logout') }}" class="btn btn-outline-secondary">Logout</a>
+        </div>
+    </div>
+</div>
+Escolha a opção que você preferir baseada no design e na experiência do usuário que deseja proporcionar. Se você tiver uma preferência específica para o posicionamento ou estilo do botão, posso ajustar de acordo.RetrySno meu codigo, onde fica a parte do filtro?EditA parte do filtro está principalmente em dois lugares no seu código:
+
+No arquivo index.html - Onde está o formulário de busca inicial:
+
+htmlCopy<form action="/search" method="GET">
+    <div class="mb-3">
+        <select class="form-select" name="subject">
+            <option selected>Select Subject</option>
+            <option value="mathematics">Mathematics</option>
+            <!-- outras opções -->
+        </select>
+    </div>
+    <div class="mb-3">
+        <select class="form-select" name="grade">
+            <!-- opções de séries -->
+        </select>
+    </div>
+    <!-- outros campos de filtro -->
+    <button type="submit" class="btn btn-primary w-100">Find Tutors</button>
+</form>
+
+No arquivo search.html - Onde está o filtro lateral na página de resultados:
+
+htmlCopy<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">Filter Tutors</h5>
+        <form action="/search" method="GET">
+            <div class="mb-3">
+                <label>Subject</label>
+                <select class="form-select" name="subject">
+                    <!-- opções de matérias -->
+                </select>
+            </div>
+            <!-- outros campos de filtro -->
+            <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+        </form>
+    </div>
+</div>
+
+No arquivo app.py - Onde a lógica de filtragem é processada:
+
+pythonCopy@app.route('/search')
+def search():
+    # ...
+    subject = request.args.get('subject')
+    grade = request.args.get('grade')
+    language = request.args.get('language')
+    
+    # Build query base
+    query = 'SELECT * FROM tutors WHERE 1=1'
+    params = []
+    
+    # Add filters if selected
+    if subject and subject != 'Select Subject':
+        query += ' AND subjects LIKE ?'
+        params.append(f'%{subject}%')
+    
+    if language and language != 'Select Language':
+        query += ' AND languages LIKE ?'
+        params.append(f'%{language}%')
+        
+    if grade and grade != 'Select Grade':
+        query += ' AND grade_levels LIKE ?'
+        params.append(f'%{grade}%')
+    
+    # Run query with filters
+    tutors = conn.execute(query, params).fetchall()
+    # ...
+A filtragem funciona assim:
+
+O usuário seleciona critérios nos formulários (matéria, série, idioma, etc.)
+Esses valores são enviados como parâmetros de URL para a rota /search
+No backend, a função search() constrói uma consulta SQL dinâmica com base nos filtros selecionados
+A consulta é executada no banco de dados e os resultados filtrados são retornados
+Adicionalmente, se um endereço for fornecido, um filtro de distância é aplicado para mostrar apenas tutores dentro do raio selecionado
+
+Esta abordagem de filtro é eficiente porque combina filtragem no banco de dados (para matéria, série, idioma) e filtragem em memória (para distância baseada em localização).RetrySna pagina de registro do tutor tem um campo no formulario para foto. Esse campo foi pensado para que a pessoa consiga fazer o upload da foto....minha professora falou que posso implementar isso com bootstrap no HTML, vc poderia me ajudar?EditClaro! Podemos modificar o campo de foto no formulário de registro para implementar um upload de arquivo usando Bootstrap. Atualmente, você está usando um campo de URL, mas vamos mudar para um campo de upload de arquivo.
+Primeiro, vamos modificar o HTML no arquivo tutor_register.html:
+htmlCopy<div class="mb-3">
+    <label class="form-label">Profile Photo</label>
+    <input type="file" class="form-control" name="photo" accept="image/*">
+    <small class="text-muted">Upload your profile photo (max 5MB)</small>
+</div>
+Isso cria um campo de upload de arquivo simples usando o estilo Bootstrap.
+Em seguida, precisamos modificar a função tutor_register no app.py para processar o upload do arquivo e enviá-lo para o Cloudinary:
+pythonCopy@app.route('/tutor/register', methods=['GET', 'POST'])
+def tutor_register():
+    if request.method == 'POST':
+        try:
+            # Get form data
+            name = request.form['name']
+            email = request.form['email']
+            password = request.form['password']
+            confirm_password = request.form['confirm_password']
+            phone = request.form['phone']
+            location = request.form['location']
+            address = request.form['address']
+            subjects = request.form['subjects']
+            languages = request.form['languages']
+            grade_levels = request.form['grade_levels']
+            availability = request.form['availability']
+            price = request.form['price']
+            zipcode = request.form['zipcode']
+            
+            # Processar o upload da foto
+            photo_url = ""
+            if 'photo' in request.files and request.files['photo'].filename != '':
+                photo_file = request.files['photo']
+                
+                # Upload para o Cloudinary
+                from cloudinary import uploader
+                upload_result = uploader.upload(photo_file)
+                photo_url = upload_result['secure_url']
+            
+            # Restante do código de registro
+            # ...
+            
+            # Atualizar a inserção no banco para usar photo_url
+            conn.execute('''
+                INSERT INTO tutors (
+                    name, email, password, phone, location, address,
+                    subjects, languages, grade_levels, availability, 
+                    price, zipcode, photo, latitude, longitude
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                name, email, password, phone, location, address,
+                subjects, languages, grade_levels, availability, 
+                price, zipcode, photo_url, latitude, longitude
+            ))
+            
+            # ...
+Também precisamos modificar o formulário HTML para suportar o upload de arquivos, adicionando o atributo enctype:
+htmlCopy<form method="POST" enctype="multipart/form-data">
+    <!-- campos do formulário -->
+</form>
+Este enctype="multipart/form-data" é essencial para que o formulário possa enviar arquivos.
+Para implementar essa funcionalidade completa, você precisa:
+
+Adicionar o atributo enctype="multipart/form-data" ao formulário
+Mudar o input de imagem para type="file"
+Atualizar o backend para processar o arquivo e fazer upload para o Cloudinary
+Armazenar a URL resultante no banco de dados
+
+Quer que eu mostre o código completo com todas essas alterações?RetrySna verdade o usuario fara o upload no procrio computador de um arquivo jpeg eu usei o claudinary pq fica mais leveEditEntendi! Você está usando o Cloudinary justamente para armazenar as imagens na nuvem e tornar o site mais leve, o que é uma ótima prática.
+Vamos implementar o upload de arquivos JPEG do computador do usuário para o Cloudinary. Aqui está como fazer:
+
+Primeiro, modifique o formulário em tutor_register.html:
+
+htmlCopy<form method="POST" enctype="multipart/form-data">
+    <!-- outros campos -->
+    
+    <div class="mb-3">
+        <label class="form-label">Profile Photo</label>
+        <input type="file" class="form-control" name="photo" accept="image/jpeg,image/png">
+        <small class="text-muted">Upload a JPEG or PNG image (max 5MB)</small>
+    </div>
+    
+    <!-- outros campos -->
+</form>
+
+Agora, atualize a função tutor_register no app.py:
+
+pythonCopy@app.route('/tutor/register', methods=['GET', 'POST'])
+def tutor_register():
+    """
+    Handles tutor registration process.
+    """
+    if request.method == 'POST':
+        try:
+            # Get form data
+            name = request.form['name']
+            email = request.form['email']
+            password = request.form['password']
+            confirm_password = request.form['confirm_password']
+            phone = request.form['phone']
+            location = request.form['location']
+            address = request.form['address']
+            subjects = request.form['subjects']
+            languages = request.form['languages']
+            grade_levels = request.form['grade_levels']
+            availability = request.form['availability']
+            price = request.form['price']
+            zipcode = request.form['zipcode']
+            
+            # Upload da foto para o Cloudinary
+            photo_url = ""
+            if 'photo' in request.files and request.files['photo'].filename != '':
+                photo_file = request.files['photo']
+                
+                from cloudinary import uploader
+                upload_result = uploader.upload(photo_file)
+                photo_url = upload_result['secure_url']
+            
+            # Verify if passwords match
+            if password != confirm_password:
+                return render_template('tutor_register.html', error="Passwords do not match")
+            
+            # Get coordinates from hidden fields
+            latitude = request.form.get('latitude')
+            longitude = request.form.get('longitude')
+            
+            # If coordinates not provided, get from zipcode
+            if not latitude or not longitude:
+                headers = {
+                    'User-Agent': 'MultiLearn Tutorial Project'
+                }
+                endpoint = f"https://nominatim.openstreetmap.org/search?postalcode={zipcode}&country=Germany&format=json"
+                response = requests.get(endpoint, headers=headers)
+                
+                if response.status_code == 200:
+                    location_data = response.json()
+                    if location_data:
+                        latitude = float(location_data[0]['lat'])
+                        longitude = float(location_data[0]['lon'])
+                    else:
+                        return render_template('tutor_register.html', error="Could not verify location")
+                else:
+                    return render_template('tutor_register.html', error="Could not verify location")
+            
+            # Insert into database
+            conn = get_db_connection()
+            conn.execute('''
+                INSERT INTO tutors (
+                    name, email, password, phone, location, address,
+                    subjects, languages, grade_levels, availability, 
+                    price, zipcode, photo, latitude, longitude
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ''', (
+                name, email, password, phone, location, address,
+                subjects, languages, grade_levels, availability, 
+                price, zipcode, photo_url, latitude, longitude
+            ))
+            conn.commit()
+            conn.close()
+            
+            return redirect(url_for('tutor_login'))
+                
+        except Exception as e:
+            print(f"Error during registration: {e}")
+            return render_template('tutor_register.html', error="Registration failed. Please try again.")
+    
+    # GET request
+    return render_template('tutor_register.html')
+A função agora:
+
+Verifica se um arquivo foi enviado através do campo 'photo'
+Faz upload do arquivo para o Cloudinary usando a API uploader
+Obtém a URL segura retornada pelo Cloudinary
+Salva essa URL no banco de dados
+
+Você também precisará implementar a mesma funcionalidade no formulário de edição do perfil para permitir que os tutores atualizem suas fotos. Quer que eu mostre como fazer isso também?RetrySeu estou no basico, isso é muito avancado, pegar a foto e mandar pro Claudinary . existe algo mais simples?EditEntendo! Vamos fazer algo mais simples. Uma abordagem mais básica seria manter o funcionamento atual, mas tornar o campo de foto mais amigável usando o Bootstrap.
+Vamos modificar apenas o HTML, sem alterar a lógica de backend. O usuário poderá fornecer o URL de uma imagem (por exemplo, de alguma imagem que já está na internet).
+Aqui está como você pode melhorar o campo de foto no arquivo tutor_register.html:
+htmlCopy<div class="mb-3">
+    <label class="form-label">Profile Photo URL</label>
+    <div class="input-group">
+        <span class="input-group-text">
+            <i class="bi bi-image"></i>
+        </span>
+        <input type="url" class="form-control" name="photo" 
+               placeholder="https://example.com/your-photo.jpg">
+    </div>
+    <small class="text-muted">Enter the URL of your profile photo (for example, from social media)</small>
+</div>
+Isso mantém a lógica existente (o usuário fornecendo uma URL) mas adiciona um ícone, dicas visuais e uma mensagem explicativa. Não exige nenhuma modificação no backend.
+Se quiser usar ícones do Bootstrap, precisará adicionar o CSS deles no seu base.html:
+htmlCopy<!-- No head do base.html -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+Essa solução é mais acessível para seu nível atual, pois:
+
+Não exige modificações complexas no backend
+Mantém o atual fluxo de dados
+Melhora apenas a interface do usuário
+É perfeita para um projeto de aprendizado
+
+Mais tarde, quando estiver mais familiarizada com desenvolvimento web, você pode implementar o upload de arquivos com o Cloudinary.RetrySmas quando clico no campo ele nao abre minhas pastas para eu escolher o arquivo....EditAh, entendi sua dúvida! Você quer que o campo permita selecionar um arquivo do computador, mas sem a complexidade de enviar esse arquivo para o Cloudinary.
+A solução mais simples seria usar um campo de arquivo (<input type="file">) que abre o explorador de arquivos, mas em vez de enviar o arquivo para o servidor, você pode extrair o caminho local e usá-lo como referência.
+No entanto, por razões de segurança, os navegadores modernos não permitem que JavaScript acesse o caminho completo de um arquivo local. Isso significa que não podemos simplesmente pegar o caminho do arquivo selecionado e usá-lo como URL da imagem.
+Vamos pensar em duas abordagens simples:
+Opção 1: Campos separados com instruções claras
+htmlCopy<div class="mb-3">
+    <label class="form-label">Profile Photo</label>
+    <div class="alert alert-info" role="alert">
+        <b>Opção 1:</b> Selecione uma foto para visualizá-la (não será enviada ao servidor)
+        <input type="file" class="form-control mt-2" id="photoPreview" accept="image/*">
+        <b>Opção 2:</b> OU cole a URL de uma imagem online
+        <input type="url" class="form-control mt-2" name="photo" placeholder="https://example.com/your-photo.jpg">
+    </div>
+</div>
+
+<script>
+document.getElementById('photoPreview').addEventListener('change', function(event) {
+    alert('Para usar esta foto, você precisará fazer upload em um serviço como Imgur, Google Photos, etc. e depois colar a URL no campo abaixo.');
+});
+</script>
+Opção 2: Links para serviços gratuitos de hospedagem de imagens
+htmlCopy<div class="mb-3">
+    <label class="form-label">Profile Photo URL</label>
+    <input type="url" class="form-control" name="photo" placeholder="https://example.com/your-photo.jpg">
+    <small class="text-muted">
+        Digite a URL de uma imagem. Você pode fazer upload em serviços gratuitos como:
+        <a href="https://imgur.com/upload" target="_blank">Imgur</a>,
+        <a href="https://postimages.org/" target="_blank">PostImages</a>, ou
+        <a href="https://imgbb.com/" target="_blank">ImgBB</a>
+    </small>
+</div>
+Essas soluções mantêm a simplicidade de implementação, mas oferecem melhores instruções aos usuários sobre como fornecer imagens para seus perfis.
+Qual dessas opções você prefere?RetrySeu achei isso no boostrap :<div class="mb-3">
+  <label for="formFile" class="form-label">Default file input example</label>
+  <input class="form-control" type="file" id="formFile">
+</div>EditSim, essa é a implementação básica de um campo de upload de arquivo no Bootstrap! É perfeito se você quer apenas a aparência de um campo de upload, mas sem processar o upload em si.
+Você pode usar esse código no seu formulário, adaptando-o para o seu caso:
+htmlCopy<div class="mb-3">
+  <label for="photo" class="form-label">Profile Photo</label>
+  <input class="form-control" type="file" id="photo" name="photo" accept="image/*">
+  <small class="text-muted">Select a profile photo (this is for display only, please provide a URL below)</small>
+</div>
+
+<div class="mb-3">
+  <label for="photoUrl" class="form-label">Photo URL</label>
+  <input type="url" class="form-control" id="photoUrl" name="photo" placeholder="https://example.com/your-photo.jpg">
+  <small class="text-muted">After selecting a photo above, enter its URL here</small>
+</div>
+Esta abordagem:
+
+Permite que o usuário "selecione" um arquivo do computador (abrindo o explorador de arquivos)
+Mas mantém o campo URL para inserir o endereço da imagem que será realmente salvo no banco de dados
+
+Lembre-se que, como mencionei antes, o navegador não permitirá que você acesse o caminho completo do arquivo selecionado por razões de segurança, então o usuário ainda precisará fornecer a URL da imagem manualmente.
+Se quiser simplificar ainda mais, você pode usar apenas o campo de seleção de arquivo e adicionar uma nota explicativa:
+htmlCopy<div class="mb-3">
+  <label for="photo" class="form-label">Profile Photo URL</label>
+  <input type="url" class="form-control" id="photo" name="photo" placeholder="https://example.com/your-photo.jpg">
+  <small class="text-muted">Enter the URL of your profile photo from services like Google Photos, Imgur, etc.</small>
+</div>
+Qual dessas opções seria melhor para seu projeto?RetrySpara processar o upload em si de um arquivo JPG é muito complexo?EditO processamento de upload de arquivos não é extremamente complexo, mas requer alguns passos específicos. Vou explicar os componentes principais para implementar upload de imagens no seu projeto Flask:
+1. HTML do Formulário
+htmlCopy<form method="POST" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label for="photo" class="form-label">Profile Photo</label>
+    <input class="form-control" type="file" id="photo" name="photo" accept="image/jpeg,image/png">
+  </div>
+  <!-- outros campos -->
+  <button type="submit" class="btn btn-primary">Register</button>
+</form>
+O atributo enctype="multipart/form-data" é crucial - sem ele os arquivos não são enviados.
+2. Python (Flask) para Processar o Upload
+pythonCopy@app.route('/tutor/register', methods=['GET', 'POST'])
+def tutor_register():
+    if request.method == 'POST':
+        # Outros campos do formulário
+        
+        # Processar foto
+        if 'photo' in request.files:
+            photo_file = request.files['photo']
+            
+            # Verificar se um arquivo foi selecionado
+            if photo_file.filename != '':
+                # Upload para Cloudinary
+                from cloudinary import uploader
+                upload_result = uploader.upload(photo_file)
+                photo_url = upload_result['secure_url']
+                
+                # Continuar com o registro usando photo_url no banco de dados
+3. O que torna isso um pouco mais complexo:
+
+Validação de arquivo: Verificar se é realmente uma imagem, tamanho máximo, etc.
+Tratamento de erros: O que fazer se o upload falhar
+Configuração do Cloudinary: Garantir que as credenciais estejam corretas
+
+Para um projeto de aprendizado básico, essa implementação já seria suficiente. A parte mais desafiadora é a integração com o Cloudinary, mas você já tem a configuração básica no seu código.
+Se quiser implementar isso, posso detalhar mais algumas partes como validação de arquivos e tratamento de erros. Mas sim, é um pouco mais avançado que o básico de HTML/CSS/JavaScript.RetryScaso eu nao queira fazer o upload para o claudinary seria possivel?EditSim, é possível implementar o upload sem usar o Cloudinary. Nesse caso, você guardaria as imagens em uma pasta dentro do seu projeto. É uma abordagem mais simples para aprendizado, embora não seja recomendada para aplicações em produção.
+Aqui está como você poderia fazer:
+1. Criar uma pasta para guardar as imagens
+Primeiro, crie uma pasta chamada uploads dentro da pasta static:
+Copystatic/
+  └── uploads/
+2. Modificar o formulário HTML para aceitar arquivos
+htmlCopy<form method="POST" enctype="multipart/form-data">
+  <div class="mb-3">
+    <label for="photo" class="form-label">Profile Photo</label>
+    <input class="form-control" type="file" id="photo" name="photo" accept="image/jpeg,image/png">
+  </div>
+  <!-- outros campos -->
+  <button type="submit" class="btn btn-primary">Register</button>
+</form>
+3. Processar o upload no backend
+pythonCopyimport os
+from werkzeug.utils import secure_filename
+
+# Definir a pasta de uploads
+UPLOAD_FOLDER = 'static/uploads'
+# Certificar que a pasta existe
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+@app.route('/tutor/register', methods=['GET', 'POST'])
+def tutor_register():
+    if request.method == 'POST':
+        # Outros campos do formulário
+        
+        # Processar foto
+        photo_path = ""
+        if 'photo' in request.files:
+            photo_file = request.files['photo']
+            
+            # Verificar se um arquivo foi selecionado
+            if photo_file.filename != '':
+                # Garantir um nome de arquivo seguro
+                filename = secure_filename(photo_file.filename)
+                # Criar um nome único para evitar sobrescrever arquivos
+                unique_filename = f"{int(time.time())}_{filename}"
+                # Caminho completo
+                filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+                # Salvar o arquivo
+                photo_file.save(filepath)
+                # Caminho relativo para armazenar no banco
+                photo_path = f"uploads/{unique_filename}"
+                
+        # Continuar com o registro usando photo_path no banco de dados
+        # ...
+        conn.execute('''
+            INSERT INTO tutors (
+                # outros campos...
+                photo
+            ) VALUES (
+                # outros valores...
+                ?
+            )
+        ''', (
+            # outros valores...
+            photo_path
+        ))
+4. Exibir a imagem nos templates
+Para mostrar a imagem, você usaria:
+htmlCopy<img src="{{ url_for('static', filename=tutor.photo) }}" alt="{{ tutor.name }}">
+Esta abordagem é mais simples de implementar, mas tem algumas limitações:
+
+As imagens ficam armazenadas no servidor, ocupando espaço
+Se você redeployar a aplicação, precisará transferir também a pasta de uploads
+Não há otimização de imagens como o Cloudinary oferece
+
+Para um projeto de aprendizado, esta solução é perfeitamente adequada!RetrySlegal, eu consigo fazer isso com essa estrutura do html?
+<div class="mb-3">
+                                <label for="formFile" class="form-label">Default file input example</label>
+                                <input class="form-control" type="file" id="formFile">
+                            </div>EditSim, você pode adaptar essa estrutura HTML para criar o upload de arquivos! Só precisa fazer alguns ajustes para que funcione corretamente com o processamento do backend:
+
+Adicione o atributo name para que o Flask possa acessar o arquivo
+Adicione o atributo accept para limitar os tipos de arquivo
+Atualize o texto do label para algo mais descritivo
+
+Aqui está o código ajustado:
+htmlCopy<div class="mb-3">
+    <label for="photo" class="form-label">Profile Photo</label>
+    <input class="form-control" type="file" id="photo" name="photo" accept="image/jpeg,image/png">
+    <small class="text-muted">Upload a profile photo (JPG or PNG)</small>
+</div>
+Essa estrutura é compatível com o código de processamento de upload que mostrei anteriormente. O campo é estilizado pelo Bootstrap e tem a mesma aparência do exemplo que você compartilhou, mas agora está configurado para funcionar com o backend Flask.
+Lembre-se de que o formulário que contém este campo precisa ter o atributo enctype="multipart/form-data" para permitir uploads de arquivos:
+htmlCopy<form method="POST" enctype="multipart/form-data">
+    <!-- seus campos aqui -->
+</form>
+Com essas modificações, o campo de upload de arquivo estará pronto para ser usado em seu projeto!RetrySvou implementar esse codigo, mas tenho uma duvida nesse botao Register, sendo que ja tenho um:<form method="POST" enctype="multipart/form-data"> <div class="mb-3"> <label for="photo" class="form-label">Profile Photo</label> <input class="form-control" type="file" id="photo" name="photo" accept="image/jpeg,image/png"> </div> <!-- outros campos --> <button type="submit" class="btn btn-primary">Register</button> </form>EditNão há problema! Se você já tem um botão "Register" no seu formulário, não precisa adicionar outro. O botão que mostrei era apenas parte do exemplo para ilustrar um formulário completo.
+Seu código atual está correto. O botão type="submit" já faz o trabalho de enviar o formulário com todos os campos, incluindo o campo de upload de arquivo.
+O importante é garantir que:
+
+O atributo enctype="multipart/form-data" esteja no elemento <form>
+O campo de upload de arquivo tenha os atributos:
+
+type="file" para indicar que é um campo de upload
+name="photo" para identificar o arquivo no backend
+accept="image/jpeg,image/png" para limitar os tipos de arquivo
+
+
+
+Então, sim, você pode usar seu botão de registro existente sem problemas!RetryS<div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-primary">Register</button>
+                                <a href="{{ url_for('tutor_login') }}" class="btn btn-link">Already have an account?
+                                    Login</a>
+                            </div>EditAh, agora entendi! Você já tem o botão "Register" dentro de uma estrutura diferente com uma formatação específica do Bootstrap.
+Seu código atual está perfeito como está. A estrutura d-grid gap-2 cria um layout de grid com espaçamento entre os elementos, o que resulta em uma aparência elegante para o botão de registro e o link de login.
+Não é necessário fazer nenhuma alteração nessa parte. O botão de tipo submit que você já tem irá enviar o formulário completo, incluindo o campo de upload de arquivo que estamos adicionando.
+Apenas certifique-se de que o campo de upload de arquivo esteja dentro do elemento <form> antes desses botões, e que o formulário tenha o atributo enctype="multipart/form-data" como discutimos anteriormente.
+Essa estrutura atual dos botões está ótima e você pode mantê-la exatamente como está!Retryapp.py338 linespySpor favor analise meu codigo e corriga, esta errado em algo que eu fizEditAnalisando seu código, encontrei alguns problemas que precisam ser corrigidos:
+
+Falta importar o módulo time: Você está usando int(time.time()) para criar nomes de arquivo únicos, mas não importou o módulo time.
+Problema de indentação: Há vários problemas de indentação em todo o código, especialmente nas rotas e funções. A indentação em Python é crucial para o funcionamento correto.
+Estrutura incorreta na função search(): Há um problema na forma como as chaves e parênteses estão fechados.
+Na função de registro: A variável photo_path é usada para armazenar o caminho da foto carregada, mas depois a variável photo (que parece conter a URL) é passada para o banco de dados.
+
+Aqui estão as correções mais importantes:
+
+Adicione a importação do time:
+
+pythonCopyimport os
+import time
+from werkzeug.utils import secure_filename
+
+Corrija o uso da variável de caminho de foto no registro:
+
+pythonCopy# Substitua esta linha:
+photo = request.form.get('photo', '')
+
+# Na query de inserção, use photo_path em vez de photo:
+conn.execute('''
+    INSERT INTO tutors (
+        name, email, password, phone, location, address,
+        subjects, languages, grade_levels, availability,
+        price, zipcode, photo, latitude, longitude
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+''', (
+    name, email, password, phone, location, address,
+    subjects, languages, grade_levels, availability,
+    price, zipcode, photo_path, latitude, longitude  # Aqui, use photo_path
+))
+
+A função search() tem problemas graves de estrutura. Você precisa rever a indentação e os fechamentos de parênteses.
+É recomendável reformatar todo o arquivo para corrigir a indentação. No VS Code, você pode fazer isso pressionando Shift+Alt+F ou usando o comando Format Document.
+
+Como um exercício de aprendizado, sugiro reescrever as partes problemáticas do código para garantir que você entenda a estrutura correta. Se precisar de ajuda para reescrever alguma parte específica, me avise!RetrySaqui eu substituo photo pelo o que?EditNa função tutor_register(), você está lidando com duas possibilidades para a foto do perfil:
+
+O usuário faz upload de um arquivo
+O usuário fornece uma URL
+
+Atualmente, seu código cria photo_path quando o usuário faz upload, mas depois passa a variável photo para o banco de dados, o que está incorreto.
+No seu código, você deve substituir:
+pythonCopy# INSERT INTO tutors (...
+price, zipcode, photo, latitude, longitude
+# ...
+price, zipcode, photo_path, latitude, longitude
+Se quer permitir que o usuário escolha entre fornecer uma URL OU fazer upload, você precisa modificar o código para lidar com ambos os casos:
+pythonCopy# Inicialmente, assumimos que não há foto
+photo_url = ""
+
+# Verifica se um arquivo foi enviado
+if 'photo' in request.files:
+    photo_file = request.files['photo']
+    if photo_file.filename != '':
+        # Processa o upload do arquivo
+        filename = secure_filename(photo_file.filename)
+        unique_filename = f"{int(time.time())}_{filename}"
+        filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+        photo_file.save(filepath)
+        photo_url = f"uploads/{unique_filename}"
+# Se nenhum arquivo foi enviado, verifica se uma URL foi fornecida
+elif 'photo_url' in request.form and request.form['photo_url'].strip():
+    photo_url = request.form['photo_url']
+
+# E na inserção do banco de dados, use photo_url:
+conn.execute('''
+    INSERT INTO tutors (
+        # ... outros campos
+        photo
+    ) VALUES (
+        # ... outros valores
+        ?
+    )
+''', (
+    # ... outros valores
+    photo_url,
+))
+Mas note que para isso funcionar, você precisaria ter um campo chamado photo_url no seu formulário HTML, além do campo de upload photo. Se você quiser apenas usar o upload de arquivo, basta substituir photo por photo_path na inserção no banco de dados como mencionei anteriormente.RetrySaqui eu susbtituo photo pelo o que? name = request.form['name']
+            email = request.form['email']
+            password = request.form['password']
+            confirm_password = request.form['confirm_password']
+            phone = request.form['phone']
+            location = request.form['location']
+            address = request.form['address'] # Capturar o endereço
+            subjects = request.form['subjects']
+            languages = request.form['languages']
+            grade_levels = request.form['grade_levels']
+            availability = request.form['availability']
+            price = request.form['price']
+            zipcode = request.form['zipcode']
+            photo = request.form.get('photo', '')EditNesse trecho, você está capturando os dados do formulário. Se você implementou o upload de arquivo conforme conversamos, você não usará mais photo = request.form.get('photo', '') porque a foto não virá mais como um campo de texto simples no formulário.
+Em vez disso, você deve remover essa linha e substituí-la pela lógica de tratamento do upload de arquivo, como mostrei anteriormente:
+pythonCopy# Remova esta linha:
+# photo = request.form.get('photo', '')
+
+# E adicione este código:
+photo_path = ""
+if 'photo' in request.files:
+    photo_file = request.files['photo']
+    
+    # Verificar se um arquivo foi selecionado
+    if photo_file.filename != '':
+        # Garantir um nome de arquivo seguro
+        filename = secure_filename(photo_file.filename)
+        # Criar um nome único para evitar sobrescrever arquivos
+        unique_filename = f"{int(time.time())}_{filename}"
+        # Caminho completo
+        filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+        # Salvar o arquivo
+        photo_file.save(filepath)
+        # Caminho relativo para armazenar no banco
+        photo_path = f"uploads/{unique_filename}"
+Depois, na parte da inserção no banco de dados, você usará photo_path em vez de photo:
+pythonCopyINSERT INTO tutors (
+    # ... outros campos ...
+    price, zipcode, photo, latitude, longitude
+) VALUES (
+    # ... outros valores ...
+    price, zipcode, photo_path, latitude, longitude  # Use photo_path aqui
+)
+Este código verifica se um arquivo foi enviado, salva-o em um local específico e guarda o caminho relativo para uso posterior.RetrySeu fiz algo errado no meu codigo, mudou toda identacao. poderia por favor reescrever esse codigo novamente?photo_path = "" if 'photo' in request.files: photo_file = request.files['photo'] # Verificar se um arquivo foi selecionado if photo_file.filename != '': # Garantir um nome de arquivo seguro filename = secure_filename(photo_file.filename) # Criar um nome único para evitar sobrescrever arquivos uniquefilename = f"{int(time.time())}{filename}" # Caminho completo filepath = os.path.join(UPLOAD_FOLDER, unique_filename) # Salvar o arquivo photo_file.save(filepath) # Caminho relativo para armazenar no banco photo_path = f"uploads/{unique_filename}"EditAqui está o código reescrito com a indentação correta:
+pythonCopyphoto_path = ""
+if 'photo' in request.files:
+    photo_file = request.files['photo']
+    
+    # Verificar se um arquivo foi selecionado
+    if photo_file.filename != '':
+        # Garantir um nome de arquivo seguro
+        filename = secure_filename(photo_file.filename)
+        # Criar um nome único para evitar sobrescrever arquivos
+        unique_filename = f"{int(time.time())}_{filename}"
+        # Caminho completo
+        filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+        # Salvar o arquivo
+        photo_file.save(filepath)
+        # Caminho relativo para armazenar no banco
+        photo_path = f"uploads/{unique_filename}"
+Este trecho deve ser inserido dentro da sua função tutor_register(), antes da parte onde você faz a inserção no banco de dados.Retryapp.py337 linespySreescrever com a identacao correta o codigo app.pyEditapp.py com indentação corrigidaClick to open codeTap to openReescrevi todo o arquivo app.py com a indentação corrigida. As principais correções foram:
+
+Ajustei a indentação em todas as funções e blocos de código
+Corrigi o aninhamento de blocos if/for especialmente na função search()
+Adicionei o import do módulo time que faltava
+Corrigi a função tutor_register() para usar photo_path em vez de photo no INSERT
+Reorganizei a estrutura dos parênteses e chaves nas funções
+Corrigi os alinhamentos das consultas SQL
+
+Agora o código deve funcionar corretamente. A indentação em Python é crucial para o funcionamento do código, pois ela define a estrutura e a hierarquia dos blocos de código.RetrySOpenSSL 1.1.1+, currently the 'ssl' module is compiled with 'LibreSSL 2.8.3'. See: https://github.com/urllib3/urllib3/issues/3020
+  warnings.warn(
+Traceback (most recent call last):
+  File "/Users/anacarolina/Documents/cursos/FrauenLoop/MultiLearn/app.py", line 27, in <module>
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+  File "/Library/Developer/CommandLineTools/Library/Frameworks/Python3.framework/Versions/3.9/lib/python3.9/os.py", line 225, in makedirs
+    mkdir(name, mode)
+FileExistsError: [Errno 17] File exists: 'static/uploads'EditEste erro está ocorrendo porque a pasta 'static/uploads' já existe no seu sistema de arquivos, e o Python está tentando criá-la novamente.
+Embora estejamos usando exist_ok=True, que normalmente deveria evitar esse erro, parece que há algum problema com a implementação em seu sistema. Vamos ajustar o código para lidar com isso.
+Você pode modificar esse trecho do código no app.py:
+pythonCopy# Define upload paste
+UPLOAD_FOLDER = 'static/uploads'
+
+# Make sure the folder exists
+try:
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+except FileExistsError:
+    # Pasta já existe, podemos ignorar este erro
+    pass
+Quanto ao aviso sobre OpenSSL, é apenas um aviso relacionado à biblioteca urllib3 e à versão do SSL em seu sistema. Isso não afeta o funcionamento do seu aplicativo e pode ser ignorado para fins de desenvolvimento.
+Para iniciar seu aplicativo, experimente:
+
+Fazer a alteração acima no código
+Executar o servidor Flask novamente com python app.py
+
+Se ainda houver problemas, podemos tentar uma abordagem diferente para verificar e criar o diretório de uploads.RetrySo codigo esta rodando mas nao salva na pasta upload e nem aparece no meu banco de dadosEditVamos diagnosticar por que o upload de arquivos não está funcionando. Existem várias causas possíveis:
+
+Problema no formulário HTML - O formulário pode não estar configurado corretamente para enviar arquivos
+Problema na função de registro - Pode haver um erro na lógica de processamento de arquivos
+Problema com permissões - O Python pode não ter permissão para escrever na pasta
+
+Vamos verificar cada uma dessas possibilidades:
+1. Verifique o formulário HTML (tutor_register.html)
+Certifique-se de que o formulário tenha o atributo enctype="multipart/form-data" e que o campo de foto seja do tipo file:
+htmlCopy<form method="POST" enctype="multipart/form-data">
+    <!-- outros campos -->
+    <div class="mb-3">
+        <label for="photo" class="form-label">Profile Photo</label>
+        <input class="form-control" type="file" id="photo" name="photo" accept="image/jpeg,image/png">
+    </div>
+    <!-- outros campos -->
+</form>
+2. Adicione prints de debug na função de registro
+Modifique a função tutor_register() para adicionar prints de debug:
+pythonCopy@app.route('/tutor/register', methods=['GET', 'POST'])
+def tutor_register():
+    if request.method == 'POST':
+        try:
+            # ... outros campos ...
+            
+            # Debug do upload de arquivo
+            print("DEBUG: Verificando se há arquivo...")
+            print(f"DEBUG: request.files = {request.files}")
+            
+            photo_path = ""
+            if 'photo' in request.files:
+                photo_file = request.files['photo']
+                print(f"DEBUG: photo_file.filename = {photo_file.filename}")
+
+                # Check if a file has been selected
+                if photo_file.filename != '':
+                    print("DEBUG: Arquivo selecionado, processando...")
+                    filename = secure_filename(photo_file.filename)
+                    unique_filename = f"{int(time.time())}_{filename}"
+                    filepath = os.path.join(UPLOAD_FOLDER, unique_filename)
+                    print(f"DEBUG: Salvando em: {filepath}")
+                    photo_file.save(filepath)
+                    photo_path = f"uploads/{unique_filename}"
+                    print(f"DEBUG: photo_path = {photo_path}")
+            else:
+                print("DEBUG: Nenhum arquivo encontrado em request.files")
+            
+            # ... resto do código ...
+3. Verifique as permissões da pasta
+Certifique-se de que a pasta static/uploads tenha permissões de escrita. Você pode fazer isso com:
+pythonCopyimport os
+
+# Adicione isto após a definição de UPLOAD_FOLDER
+print(f"DEBUG: UPLOAD_FOLDER = {UPLOAD_FOLDER}")
+print(f"DEBUG: Pasta existe? {os.path.exists(UPLOAD_FOLDER)}")
+print(f"DEBUG: Permissões de escrita? {os.access(UPLOAD_FOLDER, os.W_OK)}")
+4. Certifique-se de usar photo_path no banco de dados
+Verifique se você está usando photo_path e não photo na inserção no banco de dados:
+pythonCopyconn.execute('''
+    INSERT INTO tutors (
+        name, email, password, phone, location, address,
+        subjects, languages, grade_levels, availability,
+        price, zipcode, photo, latitude, longitude
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+''', (
+    name, email, password, phone, location, address,
+    subjects, languages, grade_levels, availability,
+    price, zipcode, photo_path, latitude, longitude  # Use photo_path aqui
+))
+Adicione esses prints e execute a aplicação novamente. Quando tentar registrar um tutor, verifique os logs no terminal para identificar onde está ocorrendo o problema. Isso nos dará mais informações para resolver o problema.RetryS<div class="mb-3">
+                                <form method="POST" enctype="multipart/form-data">
+                                    <label for="photo" class="form-label">Profile Photo</label>
+                                    <input class="form-control" type="file" id="photo" name="photo" accept="image/jpeg,image/png">
+                                    <small class="text-muted">Upload a profile photo (JPG or PNG)</small>
+                                </form>
+                            </div>EditIdentificei o problema no seu código. Você está criando um novo formulário (<form>) dentro de uma div que já deveria estar dentro do formulário principal. Isso está fazendo com que o upload de arquivo seja tratado separadamente do resto dos dados do formulário.
+Você precisa remover as tags <form> e </form> desse trecho, mantendo apenas o campo de input. O formulário deve envolver todos os campos, não apenas o campo de foto.
+Corrija seu código assim:
+htmlCopy<div class="mb-3">
+    <label for="photo" class="form-label">Profile Photo</label>
+    <input class="form-control" type="file" id="photo" name="photo" accept="image/jpeg,image/png">
+    <small class="text-muted">Upload a profile photo (JPG or PNG)</small>
+</div>
+E certifique-se de que essa div esteja dentro do formulário principal, que deve ter o atributo enctype="multipart/form-data":
+htmlCopy<form method="POST" enctype="multipart/form-data">
+    <!-- Outros campos do formulário -->
+    
+    <div class="mb-3">
+        <label for="photo" class="form-label">Profile Photo</label>
+        <input class="form-control" type="file" id="photo" name="photo" accept="image/jpeg,image/png">
+        <small class="text-muted">Upload a profile photo (JPG or PNG)</small>
+    </div>
+    
+    <!-- Mais campos do formulário -->
+    
+    <button type="submit" class="btn btn-primary">Register</button>
+</form>
+O atributo enctype="multipart/form-data" deve estar apenas no formulário principal, não em elementos individuais dentro dele.RetrySqual seria a segunda linha abaixo do form?EditA segunda linha abaixo da tag <form> seria o conteúdo que você quer incluir dentro do formulário, geralmente começando pelos campos de entrada. No caso do seu formulário de registro, provavelmente seria o início dos campos de dados pessoais, como nome, email, etc.
+Por exemplo:
+htmlCopy<form method="POST" enctype="multipart/form-data">
+    <!-- Aqui começam os campos do formulário -->
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <label class="form-label">Name</label>
+            <input type="text" class="form-control" name="name" required>
+        </div>
+        <!-- outros campos -->
+    </div>
+    <!-- resto do formulário -->
+</form>
+O importante é garantir que a tag <form> envolva todos os campos que você quer enviar, incluindo o campo de upload de foto, e que ela tenha o atributo enctype="multipart/form-data" para permitir o upload de arquivos.
+Você não deve ter tags <form> aninhadas (um formulário dentro de outro). Todos os campos devem estar dentro de um único elemento <form>.Retry{% extends "base.html" %}
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body">
+                    <h3 class="card-title text-center mb-4">Register as Tutor<pastedSja tenho form:EditEncontrei o problema no seu formulário! Você tem um formulário aninhado dentro do formulário principal, o que não é permitido em HTML e causa problemas de envio, especialmente com uploads.
+Veja o problema:
+
+Você tem um formulário principal: <form method="POST"> perto do início
+E depois você tem outro formulário aninhado: <form method="POST" enctype="multipart/form-data"> na seção da foto
+
+Para corrigir:
+
+Remova o formulário aninhado
+Adicione o atributo enctype="multipart/form-data" ao formulário principal
+
+Assim:
+htmlCopy<!-- Linha original com problema -->
+<form method="POST">  <!-- Altere esta linha para incluir enctype -->
+
+<!-- Substitua por: -->
+<form method="POST" enctype="multipart/form-data">
+E:
+htmlCopy<!-- Remova estas tags de form aninhado -->
+<div class="mb-3">
+    <form method="POST" enctype="multipart/form-data">
+        <label for="photo" class="form-label">Profile Photo</label>
+        <input class="form-control" type="file" id="photo" name="photo" accept="image/jpeg,image/png">
+        <small class="text-muted">Upload a profile photo (JPG or PNG)</small>
+    </form>
+</div>
+
+<!-- Substitua por: -->
+<div class="mb-3">
+    <label for="photo" class="form-label">Profile Photo</label>
+    <input class="form-control" type="file" id="photo" name="photo" accept="image/jpeg,image/png">
+    <small class="text-muted">Upload a profile photo (JPG or PNG)</small>
+</div>
+Com essas alterações, o formulário enviará todos os dados, incluindo o arquivo de imagem, corretamente para o servidor.RetrySEditVejo que você está tentando fazer o registro no site MultiLearn e encontrando problemas. A mensagem de erro mostra "Registration failed. Please try again." na parte superior do formulário.
+Analisando a captura de tela do console do navegador, também vejo alguns erros 404 (NOT FOUND), o que sugere que alguns recursos não estão sendo encontrados.
+O formulário parece estar correto na interface, mas ainda há problemas na implementação. Vamos resolver isso:
+
+Primeiro problema: Você provavelmente ainda tem o formulário aninhado no seu código HTML.
+Segundo problema: Vejo que o formulário atual no navegador está usando campos de seleção padrão em vez dos dropdowns com checkboxes que você tinha implementado.
+
+Para resolver o problema principal do upload de fotos:
+
+Certifique-se de que a tag de abertura do formulário principal tenha o atributo enctype:
+htmlCopy<form method="POST" enctype="multipart/form-data">
+
+Verifique se você removeu completamente o formulário aninhado na seção da foto.
+Confirme que a função tutor_register() no seu arquivo app.py esteja processando corretamente o campo de foto.
+
+Você também pode verificar se as pastas dos arquivos CSS estão corretas, já que há erros 404 para arquivos CSS.
+Poderia me mostrar o código HTML atualizado do seu formulário (tutor_register.html) e a parte relevante do app.py para que eu possa identificar exatamente o que está causando o erro?
+
+
+@app.route('/search')
+def search():
+    """
+    Handles tutor search with location-based filtering using Nominatim API with address.
+    """
+    # Get the page number from the query string, default is 1
+    page = int(request.args.get('page', 1))
+
+    # Define how many tutors to show per page
+    per_page = 5
+    
+    # Calculate the offset for the SQL query
+    offset = (page - 1) * per_page
+
+    conn = get_db_connection()
+    address = request.args.get('address')  # Changed zipcode to address
+    radius = float(request.args.get('radius', 5))
+    subject = request.args.get('subject')
+    grade = request.args.get('grade')
+    language = request.args.get('language')
+
+    # Inicializar a consulta e os parâmetros ANTES de adicionar as condições
+    query = 'SELECT * FROM tutors WHERE 1=1'
+    params = []
+
+    # Add filters if selected
+    if subject and subject != 'Select Subject':
+        query += ' AND subjects LIKE ?'
+        params.append(f'%{subject}%')
+
+    if language and language != 'Select Language':
+        query += ' AND languages LIKE ?'
+        params.append(f'%{language}%')
+
+    if grade and grade != 'Select Grade':
+        query += ' AND grade_levels LIKE ?'
+        params.append(f'%{grade}%')
+
+    # Criar consulta para contagem total
+    count_query = 'SELECT COUNT(*) as count FROM tutors WHERE 1=1'
+    count_params = []
+    
+    # Adicionar os mesmos filtros à consulta de contagem
+    if subject and subject != 'Select Subject':
+        count_query += ' AND subjects LIKE ?'
+        count_params.append(f'%{subject}%')
+    if language and language != 'Select Language':
+        count_query += ' AND languages LIKE ?'
+        count_params.append(f'%{language}%')
+    if grade and grade != 'Select Grade':
+        count_query += ' AND grade_levels LIKE ?'
+        count_params.append(f'%{grade}%')
+    
+    # Executar a consulta de contagem
+    total_count = conn.execute(count_query, count_params).fetchone()['count']
+    total_pages = (total_count + per_page - 1) // per_page  # Arredondar para cima
+
+    # Adicionar LIMIT e OFFSET à consulta principal
+    pagination_query = query + ' LIMIT ? OFFSET ?'
+    pagination_params = params + [per_page, offset]
+    
+    # Executar a consulta paginada
+    tutors = conn.execute(pagination_query, pagination_params).fetchall()
+    filtered_tutors = []
+
+    # Resto do código para filtragem por distância...

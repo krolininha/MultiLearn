@@ -1,0 +1,99 @@
+#map {
+    height: 400px;
+    width: 100%;
+    margin-bottom: 20px;
+}
+/* about-us.*/
+/* Paleta de cores */
+:root {
+    --primary-color: #1A73E8;    /* Azul */
+    --secondary-color: #34A853;  /* Verde */
+    --accent-color: #F9AB00;     /* Laranja suave */
+    --text-dark: #333333;        /* Texto principal */
+    --text-medium: #757575;      /* Texto secundário */
+    --bg-light: #F5F5F5;         /* Background claro */
+    --white: #FFFFFF;            /* Branco */
+  }
+  
+  /* Estilos da página About Us */
+  .about-header {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 60px 0;
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  
+  .about-header h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+  
+  .about-header p {
+    font-size: 1.2rem;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  
+  .about-section {
+    padding: 40px 0;
+  }
+  
+  .about-section h2 {
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-size: 2rem;
+  }
+  
+  .about-section p {
+    color: var(--text-dark);
+    font-size: 1.1rem;
+    line-height: 1.6;
+  }
+  
+  .mission-vision {
+    background-color: var(--bg-light);
+    padding: 30px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+  }
+  
+  .feature-card {
+    background-color: var(--white);
+    border-radius: 8px;
+    padding: 25px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    height: 100%;
+    transition: transform 0.3s ease;
+  }
+  
+  .feature-card:hover {
+    transform: translateY(-5px);
+  }
+  
+  .feature-card h3 {
+    color: var(--secondary-color);
+    font-size: 1.5rem;
+    margin-bottom: 15px;
+  }
+  
+  .feature-card p {
+    color: var(--text-medium);
+  }
+  
+  .contact-section {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 40px;
+    border-radius: 8px;
+    margin-top: 40px;
+  }
+  
+  .contact-section h2 {
+    color: var(--white);
+  }
+  
+  .contact-section p {
+    color: var(--white);
+    opacity: 0.9;
+  }
