@@ -156,12 +156,13 @@ def search():
                         })
                     
                     return render_template('search.html', 
-                                        tutors=filtered_tutors,
-                                        tutors_json=json.dumps(tutors_list),
-                                        center_lat=center_lat, 
-                                        center_lng=center_lng,
-                                        current_page=page,
-                                        total_pages=total_pages)
+                            tutors=tutors,
+                            tutors_json=json.dumps(tutors_list),
+                            center_lat=center_lat,
+                            center_lng=center_lng,
+                            current_page=page,
+                            total_pages=total_pages)
+                
         except Exception as e:
             print(f"DEBUG: Erro ao buscar localização: {e}")
     
