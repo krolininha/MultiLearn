@@ -40,7 +40,7 @@
                         </div>
                         <div class="mb-3">
                             <label>Your Zipcode</label>
-                            <input type="text" name="zipcode" class="form-control" placeholder="ex: 10365">
+                            <input type="text" name="address" class="form-control" placeholder="e.g., Kreuzberg">
                         </div>
                         <div class="mb-3">
                             <label>Distance</label>
@@ -60,7 +60,8 @@
         <div class="col-md-9">
             <!-- Maps here -->
             <div id="map" data-center-lat="{{ center_lat|default(52.5200) }}"
-                data-center-lng="{{ center_lng|default(13.4050) }}" data-tutors='{{ tutors_json|safe }}'
+                data-center-lng="{{ center_lng|default(13.4050) }}" 
+                data-tutors='{{ tutors_json|safe }}'
                 style="height: 400px;" class="mb-4">
             </div>
 
